@@ -12,4 +12,11 @@
     <dimen name="firstword_textsize_card">15sp</dimen>
     <dimen name="timecard_marginleft_card">5dp</dimen>
     <dimen name="like_margintop_card">10dp</dimen>
+    <dimen name="appbarlayout_height">256dp</dimen>
+    <dimen name="textsize_usernamedetail">25sp</dimen>
+    <dimen name="textsize_likenumberdetail">15sp</dimen>
+    <dimen name="marginleft_secondword">7dp</dimen>
+    <dimen name="height_divider">1dp</dimen>
+    <dimen name="paddingtop_titleimagedetail">20dp</dimen>
+    <dimen name="padding_horizontal_textcontentdetail">35dp</dimen>
 </resources>
