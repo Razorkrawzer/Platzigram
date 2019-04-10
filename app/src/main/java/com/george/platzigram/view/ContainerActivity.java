@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.view.MenuItem;
 
 import com.george.platzigram.R;
-import com.george.platzigram.view.fragment.HomeFragment;
+import com.george.platzigram.post.view.HomeFragment;
 import com.george.platzigram.view.fragment.ProfileFragment;
 import com.george.platzigram.view.fragment.SearchFragment;
 
