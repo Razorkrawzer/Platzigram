@@ -1,8 +1,11 @@
 package com.george.platzigram.login.presenter;
 
+import android.app.Activity;
+
 import com.george.platzigram.login.interactor.LoginInteractor;
 import com.george.platzigram.login.interactor.LoginInteractorImpl;
 import com.george.platzigram.login.view.LoginView;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class LoginPresenterImpl implements LoginPresenter {
 
@@ -15,12 +18,12 @@ public class LoginPresenterImpl implements LoginPresenter {
     }
 
     @Override
-    public void signIn(String username, String password) {
+    public void signIn(String username, String password, Activity activity, FirebaseAuth firebaseAuth) {
 
         loginView.disableInputs();
         loginView.showProgressBar();
 
-        interactor.signIn(username, password);
+        interactor.signIn(username, password, activity, firebaseAuth);
     }
 
     @Override

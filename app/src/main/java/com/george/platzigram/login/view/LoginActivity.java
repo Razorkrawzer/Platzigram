@@ -2,9 +2,11 @@ package com.george.platzigram.login.view;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -14,7 +16,8 @@ import com.george.platzigram.R;
 import com.george.platzigram.login.presenter.LoginPresenter;
 import com.george.platzigram.login.presenter.LoginPresenterImpl;
 import com.george.platzigram.view.ContainerActivity;
-import com.george.platzigram.view.CreateAccountActivity;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity implements LoginView {
 
@@ -23,10 +26,27 @@ public class LoginActivity extends AppCompatActivity implements LoginView {
     private ProgressBar progressBarLogin;
     private LoginPresenter presenter;
 
+    private static final String TAG = "LoginRepositoryImpl";
+    private FirebaseAuth firebaseAuth;
+    private FirebaseAuth.AuthStateListener authStateListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        firebaseAuth = FirebaseAuth.getInstance();
+        authStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+                if (firebaseUser != null) {
+                    Log.w(TAG, "Usuario logeado " + firebaseUser.getEmail());
+                } else {
+                    Log.w(TAG, "Usuario No logeado ");
+                }
+            }
+        };
 
         username = findViewById(R.id.username);
         password = findViewById(R.id.password);
@@ -41,7 +61,7 @@ public class LoginActivity extends AppCompatActivity implements LoginView {
             @Override
             public void onClick(View v) {
 
-                if (username.equals("") && password.equals("")) {
+                /*if (username.equals("") && password.equals("")) {
                     loginError("Ingresa tu usuario y contraseña");
                 } else if (username.equals("")) {
                     loginError("Ingresa tu usuario");
@@ -50,11 +70,18 @@ public class LoginActivity extends AppCompatActivity implements LoginView {
                 } else {
                     presenter.signIn(username.getText().toString(), password.getText().toString());
                 }
-                goHome();
+                goHome();*/
+
+                signIn(username.getText().toString(), password.getText().toString());
+
             }
         });
 
 
+    }
+
+    private void signIn(String username, String password) {
+        presenter.signIn(username, password, this, firebaseAuth);
     }
 
 
@@ -97,6 +124,18 @@ public class LoginActivity extends AppCompatActivity implements LoginView {
     public void goHome() {
         Intent intent = new Intent(this, ContainerActivity.class);
         startActivity(intent);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        firebaseAuth.addAuthStateListener(authStateListener);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        firebaseAuth.removeAuthStateListener(authStateListener);
     }
 
     public void goHomeButton(View view) {
