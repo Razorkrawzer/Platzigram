@@ -12,28 +12,47 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.george.platzigram.R;
 import com.george.platzigram.login.presenter.LoginPresenter;
 import com.george.platzigram.login.presenter.LoginPresenterImpl;
 import com.george.platzigram.view.ContainerActivity;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import java.util.Arrays;
 
 public class LoginActivity extends AppCompatActivity implements LoginView {
 
     private TextInputEditText username, password;
     private Button login;
+    private LoginButton loginButtonFacebook;
     private ProgressBar progressBarLogin;
     private LoginPresenter presenter;
 
     private static final String TAG = "LoginRepositoryImpl";
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
+    private CallbackManager callbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        callbackManager = CallbackManager.Factory.create();
 
         firebaseAuth = FirebaseAuth.getInstance();
         authStateListener = new FirebaseAuth.AuthStateListener() {
@@ -42,6 +61,7 @@ public class LoginActivity extends AppCompatActivity implements LoginView {
                 FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
                 if (firebaseUser != null) {
                     Log.w(TAG, "Usuario logeado " + firebaseUser.getEmail());
+                    goHome();
                 } else {
                     Log.w(TAG, "Usuario No logeado ");
                 }
@@ -51,6 +71,7 @@ public class LoginActivity extends AppCompatActivity implements LoginView {
         username = findViewById(R.id.username);
         password = findViewById(R.id.password);
         login = findViewById(R.id.login);
+        loginButtonFacebook = findViewById(R.id.login_facebook);
         progressBarLogin = findViewById(R.id.progressbarLogin);
         hideProgressBar();
 
@@ -77,7 +98,43 @@ public class LoginActivity extends AppCompatActivity implements LoginView {
             }
         });
 
+        loginButtonFacebook.setReadPermissions(Arrays.asList("email"));
+        loginButtonFacebook.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Log.w(TAG, "Facebook Login Success Token: " + loginResult.getAccessToken().getApplicationId());
+                signInFacebookFirebase(loginResult.getAccessToken());
+            }
 
+            @Override
+            public void onCancel() {
+                Log.w(TAG, "Facebook Login Cancelled ");
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                Log.w(TAG, "Facebook Login Error: " + error.toString());
+                error.printStackTrace();
+            }
+        });
+
+
+    }
+
+    private void signInFacebookFirebase(AccessToken accessToken) {
+        AuthCredential authCredential = FacebookAuthProvider.getCredential(accessToken.getToken());
+
+        firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    goHome();
+                    Toast.makeText(LoginActivity.this, "Login Facebook Successful", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(LoginActivity.this, "Login Facebook Not Successful", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void signIn(String username, String password) {
@@ -153,6 +210,12 @@ public class LoginActivity extends AppCompatActivity implements LoginView {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
         startActivity(intent);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
 }
