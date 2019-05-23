@@ -19,6 +19,8 @@
     <string name="search_hinttext">Buscar</string>
     <string name="login_error">Something happened: </string>
     <string name="hint_title">Titulo</string>
-    <string name="hint_description">Descripción</string>
-    <string name="text_button_createpost">Crear post</string>
+    <string name="hint_description">Description</string>
+    <string name="text_button_createpost">Create Post</string>
+    <string name="menu_signout">Sign Out</string>
+    <string name="menu_about">About</string>
 </resources>
